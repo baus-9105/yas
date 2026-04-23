@@ -1,20 +1,20 @@
-name: Cart Service CI
+name: Order Service CI
 
 on:
   push:
     branches: [ "**" ]
     paths:
-      - "cart/**"
+      - "order/**"
       - "common-library/**"
-      - ".github/workflows/cart-ci.yml"
+      - ".github/workflows/order-ci.yml"
       - "pom.xml"
 
   pull_request:
     branches: [ "main" ]
     paths:
-      - "cart/**"
+      - "order/**"
       - "common-library/**"
-      - ".github/workflows/cart-ci.yml"
+      - ".github/workflows/order-ci.yml"
       - "pom.xml"
   workflow_dispatch:
 
@@ -41,25 +41,25 @@ jobs:
           cache: 'maven'
       
       - name: Build with Maven
-        run: mvn clean install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
+        run: mvn clean install -pl order -am -DskipTests -Drevision=1.0-SNAPSHOT
         
       - name: Test with Maven
-        run: mvn verify -pl cart -am -Drevision=1.0-SNAPSHOT
+        run: mvn verify -pl order -am -Drevision=1.0-SNAPSHOT
 
       - name: Test Results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: Cart-Service-Unit-Test-Results
-          path: "cart/**/surefire-reports/*.xml"
+          name: Order-Service-Unit-Test-Results
+          path: "order/**/surefire-reports/*.xml"
           reporter: java-junit
       
       - name: Add coverage report to PR
         uses: madrapps/jacoco-report@v1.6.1
         with:
-          paths: ${{ github.workspace }}/cart/target/site/jacoco/jacoco.xml
+          paths: ${{ github.workspace }}/order/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 70
           min-coverage-changed-files: 70
-          title: 'Cart Coverage Report'
+          title: 'Order Coverage Report'
           update-comment: true
