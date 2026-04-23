@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - "cart/**"
+      - "common-library/**"
       - ".github/workflows/cart-ci.yml"
       - "pom.xml"
   workflow_dispatch:
@@ -13,6 +14,11 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout Code
@@ -28,10 +34,10 @@ jobs:
           cache: 'maven'
       
       - name: Build with Maven
-        run: mvn clean install -pl cart -am
+        run: mvn clean install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
         
       - name: Test with Maven
-        run: mvn test -pl cart
+        run: mvn test -pl cart -Drevision=1.0-SNAPSHOT
 
       - name: Publish Test Report
         uses: dorny/test-reporter@v1
@@ -40,8 +46,3 @@ jobs:
           name: Cart Service Unit Test Results
           path: "cart/**/surefire-reports/*.xml"
           reporter: java-junit
-
-
-
-              
-            
