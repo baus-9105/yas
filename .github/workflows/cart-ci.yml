@@ -1,6 +1,14 @@
 name: Cart Service CI
 
 on:
+  push:
+    branches: [ "**" ]
+    paths:
+      - "cart/**"
+      - "common-library/**"
+      - ".github/workflows/cart-ci.yml"
+      - "pom.xml"
+
   pull_request:
     branches: [ "main" ]
     paths:
@@ -9,7 +17,6 @@ on:
       - ".github/workflows/cart-ci.yml"
       - "pom.xml"
   workflow_dispatch:
-
 
 jobs:
   build-and-test:
