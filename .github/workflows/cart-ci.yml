@@ -48,7 +48,7 @@ jobs:
       - name: Run Snyk to check for vulnerabilities
         run: |
           npm install -g snyk
-          snyk test --sarif-file-output=snyk.sarif --dir=cart
+          snyk test --file=cart/pom.xml --maven-aggregate-project --sarif-file-output=snyk.sarif
         continue-on-error: true # To make sure that SARIF upload gets called
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
