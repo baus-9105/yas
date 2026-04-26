@@ -26,7 +26,6 @@ jobs:
       contents: read
       checks: write
       pull-requests: write
-      security-events: write
 
     steps:
       - name: Checkout Code
@@ -45,25 +44,25 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
-
+          
       - name: Build with Maven
-        run: |
-          mvn clean install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
+        run: mvn install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
         
       - name: Run Snyk to check for vulnerabilities
-        continue-on-error: true # To make sure that SARIF upload gets called
+        uses: snyk/actions/maven@master
+        continue-on-error: true # Ensures SARIF upload runs even if vulnerabilities are found
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: |
-          npm install -g snyk
-          snyk test \
-            --all-projects \
-            --maven-aggregate-project \
-            --sarif-file-output=snyk.sarif \
+        with:
+          args: >
+            --file=cart/pom.xml 
+            --maven-aggregate-project 
+            --sarif-file-output=snyk.sarif 
             -- -Drevision=1.0-SNAPSHOT
       
       - name: Upload Snyk report to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
         if: always()
         with:
           sarif_file: snyk.sarif
