@@ -59,9 +59,27 @@ jobs:
             --maven-aggregate-project 
             --sarif-file-output=snyk.sarif 
             -- -Drevision=1.0-SNAPSHOT
-        
+      
+      - name: Upload Snyk report to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+      
       - name: Test with Maven
         run: mvn verify -pl cart -am -Drevision=1.0-SNAPSHOT
+
+      - name: SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          mvn sonar:sonar \
+            -pl cart -am \
+            -Drevision=1.0-SNAPSHOT \
+            -Dsonar.projectKey=yas-cart-service \
+            -Dsonar.projectName="YAS - Cart Service" \
+            -Dsonar.coverage.jacoco.xmlReportPaths=cart/target/site/jacoco/jacoco.xml
 
       - name: Test Results
         uses: dorny/test-reporter@v1
