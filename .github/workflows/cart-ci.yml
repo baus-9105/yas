@@ -8,6 +8,7 @@ on:
       - "common-library/**"
       - ".github/workflows/cart-ci.yml"
       - "pom.xml"
+
   pull_request:
     branches: [ "main" ]
     paths:
@@ -18,18 +19,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Gitleaks Scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build-and-test:
-    needs: security-scan
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       checks: write
@@ -42,36 +34,42 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
-
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-sonar
-
-      - name: Build and Verify with Maven
-        run: mvn clean verify -pl cart -am -Drevision=1.0-SNAPSHOT
-
-      - name: Run Snyk for Vulnerabilities
+          
+      - name: Build with Maven
+        run: mvn install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
+        
+      - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/maven@master
-        continue-on-error: true
+        continue-on-error: true # Ensures SARIF upload runs even if vulnerabilities are found
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          JAVA_HOME: ${{ env.JAVA_HOME }}
         with:
-          args: --file=cart/pom.xml --sarif-file-output=snyk.sarif
-
-      - name: Upload Snyk report
+          args: >
+            --file=cart/pom.xml 
+            --maven-aggregate-project 
+            --sarif-file-output=${{ github.workspace }}/snyk.sarif
+            -- -Drevision=1.0-SNAPSHOT
+      
+      - name: Upload Snyk report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: snyk.sarif
+      
+      - name: Test with Maven
+        run: mvn verify -pl cart -am -Drevision=1.0-SNAPSHOT
 
       - name: SonarQube Scan
         env:
@@ -84,16 +82,15 @@ jobs:
             -Dsonar.projectKey=yas-cart-service \
             -Dsonar.projectName="YAS - Cart Service" \
             -Dsonar.coverage.jacoco.xmlReportPaths=cart/target/site/jacoco/jacoco.xml
-
       - name: Test Results
         uses: dorny/test-reporter@v1
-        if: always()
+        if: success() || failure()
         with:
           name: Cart-Service-Unit-Test-Results
           path: "cart/**/surefire-reports/*.xml"
           reporter: java-junit
-
-      - name: Jacoco Report
+      
+      - name: Add coverage report to PR
         uses: madrapps/jacoco-report@v1.6.1
         with:
           paths: ${{ github.workspace }}/cart/target/site/jacoco/jacoco.xml
