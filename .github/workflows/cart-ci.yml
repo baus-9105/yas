@@ -52,20 +52,13 @@ jobs:
         
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/maven@master
-        continue-on-error: true # Ensures SARIF upload runs even if vulnerabilities are found
+        continue-on-error: true # To make sure that SARIF upload gets called
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          NODE_OPTIONS: --max-old-space-size=4096
         with:
-          args: >
-            --file=cart/pom.xml 
-            --maven-aggregate-project 
-            --sarif-file-output=${{ github.workspace }}/snyk.sarif
-            -- -Drevision=1.0-SNAPSHOT
-      
-      - name: Upload Snyk report to GitHub Code Scanning
+          args: --sarif-file-output=snyk.sarif
+      - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
         with:
           sarif_file: snyk.sarif
       
