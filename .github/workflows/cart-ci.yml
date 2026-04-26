@@ -87,6 +87,7 @@ jobs:
             -pl cart -am \
             -Drevision=1.0-SNAPSHOT \
             -Dsonar.projectKey=baus-9105_yas \
+            -Dsonar.organization=ffr-key \
             -Dsonar.coverage.jacoco.xmlReportPaths=cart/target/site/jacoco/jacoco.xml
       - name: Test Results
         uses: dorny/test-reporter@v1
