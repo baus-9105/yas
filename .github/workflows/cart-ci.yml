@@ -46,11 +46,12 @@ jobs:
           cache: 'maven'
         
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/maven@master
+        run: |
+          npm install -g snyk
+          snyk test --sarif-file-output=snyk.sarif --dir=cart
+        continue-on-error: true # To make sure that SARIF upload gets called
         env:
-          SNYK_TOKEN: ${{ secrets.SYNK_TOKEN }}
-        with:
-          args: --dir=cart
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       
       - name: Build with Maven
         run: mvn clean install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
