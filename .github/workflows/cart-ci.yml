@@ -61,11 +61,11 @@ jobs:
             --sarif-file-output=${{ github.workspace }}/snyk.sarif
             -- -Drevision=1.0-SNAPSHOT
       
-      - name: Upload Snyk report to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
-        with:
-          sarif_file: snyk.sarif
+      # - name: Upload Snyk report to GitHub Code Scanning
+      #   uses: github/codeql-action/upload-sarif@v4
+      #   if: always()
+      #   with:
+      #     sarif_file: snyk.sarif
       
       - name: Test with Maven
         run: mvn verify -pl cart -am -Drevision=1.0-SNAPSHOT
