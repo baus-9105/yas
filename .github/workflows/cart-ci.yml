@@ -45,7 +45,14 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
-          
+      
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-son
+
       - name: Build with Maven
         run: mvn install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
         
@@ -80,7 +87,6 @@ jobs:
             -pl cart -am \
             -Drevision=1.0-SNAPSHOT \
             -Dsonar.projectKey=baus-9105_yas \
-            -Dsonar.organization=ffr-key \
             -Dsonar.coverage.jacoco.xmlReportPaths=cart/target/site/jacoco/jacoco.xml
       - name: Test Results
         uses: dorny/test-reporter@v1
