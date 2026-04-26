@@ -51,7 +51,7 @@ jobs:
 
       - name: Build with Maven
         run: |
-          mvn install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
+          mvn clean install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
         
       - name: Run Snyk to check for vulnerabilities
         continue-on-error: true # Ensures SARIF upload runs even if vulnerabilities are found
@@ -59,11 +59,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           npm install -g snyk
-          snyk test \
-            --file=cart/pom.xml \
-            --maven-aggregate-project \
-            --sarif-file-output=snyk.sarif \
-            -- -Drevision=1.0-SNAPSHOT
+          snyk test --file=cart/pom.xml --sarif-file-output=snyk.sarif
       
       - name: Upload Snyk report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
