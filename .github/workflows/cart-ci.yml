@@ -57,7 +57,7 @@ jobs:
         run: |
           npm install -g snyk
           snyk test \
-            ---all-projects \
+            --all-projects \
             --maven-aggregate-project \
             --sarif-file-output=snyk.sarif \
             -- -Drevision=1.0-SNAPSHOT
