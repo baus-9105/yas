@@ -48,24 +48,19 @@ jobs:
           
       - name: Build with Maven
         run: |
-          echo "JAVA_HOME is: $JAVA_HOME"
-          mvn --version
           mvn install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
-          echo "JAVA_HOME is: $JAVA_HOME"
-          mvn --version
         
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/maven@master
+        run: |
+          npm install -g snyk
+          snyk test \
+            --file=cart/pom.xml \
+            --maven-aggregate-project \
+            --sarif-file-output=snyk.sarif \
+            -- -Drevision=1.0-SNAPSHOT
         continue-on-error: true # Ensures SARIF upload runs even if vulnerabilities are found
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          JAVA_HOME: ${{ env.JAVA_HOME }}
-        with:
-          args: >
-            --file=cart/pom.xml 
-            --maven-aggregate-project 
-            --sarif-file-output=${{ github.workspace }}/snyk.sarif
-            -- -Drevision=1.0-SNAPSHOT
       
       - name: Upload Snyk report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
