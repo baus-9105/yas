@@ -26,6 +26,7 @@ jobs:
       contents: read
       checks: write
       pull-requests: write
+      security-events: write
 
     steps:
       - name: Checkout Code
@@ -78,8 +79,8 @@ jobs:
           mvn sonar:sonar \
             -pl cart -am \
             -Drevision=1.0-SNAPSHOT \
-            -Dsonar.projectKey=yas-cart-service \
-            -Dsonar.projectName="YAS - Cart Service" \
+            -Dsonar.projectKey=baus-9105_yas \
+            -Dsonar.organization=ffr-key \
             -Dsonar.coverage.jacoco.xmlReportPaths=cart/target/site/jacoco/jacoco.xml
       - name: Test Results
         uses: dorny/test-reporter@v1
