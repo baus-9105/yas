@@ -46,6 +46,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
           
+      - name: Make Maven wrapper executable
+        run: chmod +x cart/mvnw
+
       - name: Build with Maven
         run: |
           mvn install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
@@ -56,13 +59,11 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           npm install -g snyk
-          snyk auth "$SNYK_TOKEN"
           snyk test \
             --file=cart/pom.xml \
             --maven-aggregate-project \
             --sarif-file-output=snyk.sarif \
-            -d \
-            -- -Drevision=1.0-SNAPSHOT || echo "Snyk check completed with issues"
+            -- -Drevision=1.0-SNAPSHOT
       
       - name: Upload Snyk report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
