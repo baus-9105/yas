@@ -45,9 +45,6 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
-          
-      - name: Make Maven wrapper executable
-        run: chmod +x cart/mvnw
 
       - name: Build with Maven
         run: |
@@ -58,7 +55,7 @@ jobs:
         continue-on-error: true # Ensures SARIF upload runs even if vulnerabilities are found
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+          NODE_OPTIONS: --max-old-space-size=4096
         with:
           args: >
             --file=cart/pom.xml 
