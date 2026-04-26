@@ -45,16 +45,24 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
         
+      - name: Install Monorepo Dependencies
+        run: |
+          mvn clean install -N -Drevision=1.0-SNAPSHOT
+          mvn clean install -DskipTests -pl common-library -am -Drevision=1.0-SNAPSHOT
+        
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/maven@master
+        run: |
+          npm install -g snyk
+          snyk test --file=cart/pom.xml --sarif-file-output=snyk.sarif
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      
+        continue-on-error: true # To make sure that SARIF upload gets called
+          
       - name: Build with Maven
-        run: mvn clean install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
+        run: mvn install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
         
       - name: Test with Maven
-        run: mvn verify -pl cart -am -Drevision=1.0-SNAPSHOT
+        run: mvn verify -pl cart -Drevision=1.0-SNAPSHOT
 
       - name: Test Results
         uses: dorny/test-reporter@v1
