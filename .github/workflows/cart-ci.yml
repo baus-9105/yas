@@ -42,7 +42,7 @@ jobs:
       - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
           
@@ -51,16 +51,18 @@ jobs:
           mvn install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
         
       - name: Run Snyk to check for vulnerabilities
+        continue-on-error: true # Ensures SARIF upload runs even if vulnerabilities are found
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           npm install -g snyk
+          snyk auth "$SNYK_TOKEN"
           snyk test \
             --file=cart/pom.xml \
             --maven-aggregate-project \
             --sarif-file-output=snyk.sarif \
-            -- -Drevision=1.0-SNAPSHOT
-        continue-on-error: true # Ensures SARIF upload runs even if vulnerabilities are found
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+            -d \
+            -- -Drevision=1.0-SNAPSHOT || echo "Snyk check completed with issues"
       
       - name: Upload Snyk report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
