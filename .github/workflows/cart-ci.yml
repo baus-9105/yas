@@ -45,6 +45,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
         
+      - name: Build with Maven
+        run: mvn clean install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
+        
       - name: Run Snyk to check for vulnerabilities
         run: |
           npm install -g snyk
@@ -52,9 +55,6 @@ jobs:
         continue-on-error: true # To make sure that SARIF upload gets called
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      
-      - name: Build with Maven
-        run: mvn clean install -pl cart -am -DskipTests -Drevision=1.0-SNAPSHOT
         
       - name: Test with Maven
         run: mvn verify -pl cart -am -Drevision=1.0-SNAPSHOT
