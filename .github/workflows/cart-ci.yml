@@ -67,6 +67,7 @@ jobs:
           chmod +x snyk && \
           mv snyk /usr/local/bin/
           snyk test \
+            -d
             --org=$SNYK_ORG
             --file=cart/pom.xml \
             --maven-aggregate-project \
