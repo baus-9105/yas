@@ -66,6 +66,7 @@ jobs:
           chmod +x snyk && \
           mv snyk /usr/local/bin/
           snyk test \
+            -d
             --file=cart/pom.xml \
             --maven-aggregate-project \
             --sarif-file-output=snyk.sarif \
