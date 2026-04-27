@@ -58,26 +58,16 @@ jobs:
           mvn clean install -pl cart -am -Drevision=1.0-SNAPSHOT -B
         
       - name: Run Snyk to check for vulnerabilities
-        continue-on-error: true # Ensures SARIF upload runs even if vulnerabilities are found
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
-          curl -L https://downloads.snyk.io/cli/latest/snyk-linux -o snyk && \
-          chmod +x snyk && \
+          curl -L https://downloads.snyk.io/cli/latest/snyk-linux -o snyk
+          chmod +x snyk
           mv snyk /usr/local/bin/
           snyk test \
             -d \
             --file=cart/pom.xml \
-            --maven-aggregate-project \
-            --sarif-file-output=snyk.sarif \
             -- -Drevision=1.0-SNAPSHOT
-      
-      - name: Upload Snyk report to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
-        continue-on-error: true
-        if: always()
-        with:
-          sarif_file: snyk.sarif
 
       - name: SonarQube Scan
         env:
