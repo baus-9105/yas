@@ -26,12 +26,18 @@ jobs:
       contents: read
       checks: write
       pull-requests: write
+      security-events: write
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -40,12 +46,41 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       
-      - name: Build with Maven
-        run: mvn clean install -pl payment-paypal -am -DskipTests -Drevision=1.0-SNAPSHOT
-        
-      - name: Test with Maven
-        run: mvn verify -pl payment-paypal -am -Drevision=1.0-SNAPSHOT
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-son
 
+      - name: Build and Test with Maven
+        run: |
+          mvn clean install -pl payment-paypal -am -Drevision=1.0-SNAPSHOT -B
+        
+      - name: Run Snyk to check for vulnerabilities
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_ANALYTICS_OPTOUT: 1
+        run: |
+          curl -L https://downloads.snyk.io/cli/latest/snyk-linux -o snyk
+          chmod +x snyk
+          mv snyk /usr/local/bin/
+          snyk test \
+            --file=payment-paypal/pom.xml \
+            -- -Drevision=1.0-SNAPSHOT
+
+      - name: SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          mvn sonar:sonar \
+            -pl payment-paypal -am \
+            -Drevision=1.0-SNAPSHOT \
+            -Dsonar.projectKey=baus-9105_yas \
+            -Dsonar.organization=ffr-key \
+            -Dsonar.coverage.jacoco.xmlReportPaths=payment-paypal/target/site/jacoco/jacoco.xml
       - name: Test Results
         uses: dorny/test-reporter@v1
         if: success() || failure()
