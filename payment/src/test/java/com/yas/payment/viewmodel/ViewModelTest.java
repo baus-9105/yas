@@ -9,6 +9,7 @@ import com.yas.payment.viewmodel.paymentprovider.MediaVm;
 import com.yas.payment.viewmodel.paymentprovider.PaymentProviderVm;
 import com.yas.payment.viewmodel.paymentprovider.UpdatePaymentVm;
 import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -260,6 +261,33 @@ class ViewModelTest {
             assertThat(vm.getLandingViewComponentName()).isNull();
             assertThat(vm.getAdditionalSettings()).isNull();
             assertThat(vm.getMediaId()).isNull();
+        }
+    }
+    @Nested
+    @DisplayName("ErrorVm tests")
+    class ErrorVmTests {
+
+        @Test
+        @DisplayName("Should create ErrorVm with statusCode, title, detail, and empty fieldErrors")
+        void errorVm_constructor_shouldCreateCorrectly() {
+            ErrorVm vm = new ErrorVm("404", "Not Found", "Resource not found");
+
+            assertThat(vm.statusCode()).isEqualTo("404");
+            assertThat(vm.title()).isEqualTo("Not Found");
+            assertThat(vm.detail()).isEqualTo("Resource not found");
+            assertThat(vm.fieldErrors()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should create ErrorVm with all fields including fieldErrors")
+        void errorVm_fullConstructor_shouldCreateCorrectly() {
+            List<String> errors = List.of("Field 1 is invalid", "Field 2 is required");
+            ErrorVm vm = new ErrorVm("400", "Bad Request", "Validation failed", errors);
+
+            assertThat(vm.statusCode()).isEqualTo("400");
+            assertThat(vm.title()).isEqualTo("Bad Request");
+            assertThat(vm.detail()).isEqualTo("Validation failed");
+            assertThat(vm.fieldErrors()).containsExactlyElementsOf(errors);
         }
     }
 }
