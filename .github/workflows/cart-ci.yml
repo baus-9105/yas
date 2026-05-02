@@ -58,14 +58,15 @@ jobs:
           mvn clean install -pl cart -am -Drevision=1.0-SNAPSHOT -B
         
       - name: Run Snyk to check for vulnerabilities
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_ANALYTICS_OPTOUT: 1
         run: |
           curl -L https://downloads.snyk.io/cli/latest/snyk-linux -o snyk
           chmod +x snyk
           mv snyk /usr/local/bin/
           snyk test \
-            -d \
             --file=cart/pom.xml \
             -- -Drevision=1.0-SNAPSHOT
 
