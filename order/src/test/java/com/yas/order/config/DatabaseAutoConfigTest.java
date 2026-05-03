@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 class DatabaseAutoConfigTest {
@@ -29,9 +28,7 @@ class DatabaseAutoConfigTest {
         DatabaseAutoConfig config = new DatabaseAutoConfig();
         AuditorAware<String> auditorAware = config.auditorAware();
         
-        SecurityContextHolder.getContext().setAuthentication(
-            new UsernamePasswordAuthenticationToken("testuser", "password")
-        );
+        com.yas.order.utils.SecurityContextUtils.setUpSecurityContext("testuser");
         
         Optional<String> auditor = auditorAware.getCurrentAuditor();
         assertThat(auditor).isPresent().contains("testuser");
