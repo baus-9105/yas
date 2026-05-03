@@ -92,4 +92,23 @@ class MediaServiceTest {
         when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
     }
 
+    @Test
+    public void fallbackGetMediaVmMap_shouldReturnEmptyMap() throws Exception {
+        // Use reflection to access the private fallback method
+        java.lang.reflect.Method fallbackMethod = MediaService.class.getDeclaredMethod(
+                "fallbackGetMediaVmMap", List.class, Throwable.class);
+        fallbackMethod.setAccessible(true);
+        
+        var cod = new PaymentProvider();
+        cod.setMediaId(10L);
+        
+        Throwable exception = new RuntimeException("Test exception");
+        
+        @SuppressWarnings("unchecked")
+        java.util.Map<Long, MediaVm> result = (java.util.Map<Long, MediaVm>) fallbackMethod.invoke(
+                mediaService, List.of(cod), exception);
+                
+        assertTrue(result.isEmpty());
+    }
+
 }

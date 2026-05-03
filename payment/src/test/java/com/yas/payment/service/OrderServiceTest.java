@@ -108,4 +108,22 @@ class OrderServiceTest {
         assertThat(result.paymentId()).isEqualTo(78910L);
         assertThat(result.paymentStatus()).isEqualTo("SUCCESS");
     }
+
+    @Test
+    void testHandleLongFallback_shouldThrowSameException() {
+        Throwable exception = new RuntimeException("Test Long Fallback Exception");
+        
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> orderService.handleLongFallback(exception))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Test Long Fallback Exception");
+    }
+
+    @Test
+    void testHandlePaymentOrderStatusFallback_shouldThrowSameException() {
+        Throwable exception = new RuntimeException("Test PaymentOrderStatus Fallback Exception");
+        
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> orderService.handlePaymentOrderStatusFallback(exception))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Test PaymentOrderStatus Fallback Exception");
+    }
 }
