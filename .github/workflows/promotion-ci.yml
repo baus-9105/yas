@@ -78,7 +78,7 @@ jobs:
           mvn sonar:sonar \
             -pl promotion -am \
             -Drevision=1.0-SNAPSHOT \
-            -Dsonar.projectKey=baus-9105_yas \
+            -Dsonar.projectKey=ffr-key_yas-promotion \
             -Dsonar.organization=ffr-key \
             -Dsonar.coverage.jacoco.xmlReportPaths=promotion/target/site/jacoco/jacoco.xml
       - name: Test Results

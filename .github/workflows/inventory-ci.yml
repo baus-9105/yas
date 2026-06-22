@@ -78,7 +78,7 @@ jobs:
           mvn sonar:sonar \
             -pl inventory -am \
             -Drevision=1.0-SNAPSHOT \
-            -Dsonar.projectKey=baus-9105_yas \
+            -Dsonar.projectKey=ffr-key_yas-inventory \
             -Dsonar.organization=ffr-key \
             -Dsonar.coverage.jacoco.xmlReportPaths=inventory/target/site/jacoco/jacoco.xml
       - name: Test Results

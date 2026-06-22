@@ -73,7 +73,7 @@ jobs:
         run: |
           mvn sonar:sonar \
             -f backoffice-bff \
-            -Dsonar.projectKey=baus-9105_yas \
+            -Dsonar.projectKey=ffr-key_yas-backoffice-bff \
             -Dsonar.organization=ffr-key \
             -Dsonar.coverage.jacoco.xmlReportPaths=backoffice-bff/target/site/jacoco/jacoco.xml
 
