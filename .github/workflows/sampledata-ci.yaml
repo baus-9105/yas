@@ -1,20 +1,20 @@
-name: Inventory Service CI
+name: Sample Data Service CI
 
 on:
   push:
     branches: [ "**" ]
     paths:
-      - "inventory/**"
+      - "sampledata/**"
       - "common-library/**"
-      - ".github/workflows/inventory-ci.yml"
+      - ".github/workflows/sampledata-ci.yml"
       - "pom.xml"
 
   pull_request:
     branches: [ "main" ]
     paths:
-      - "inventory/**"
+      - "sampledata/**"
       - "common-library/**"
-      - ".github/workflows/inventory-ci.yml"
+      - ".github/workflows/sampledata-ci.yml"
       - "pom.xml"
   workflow_dispatch:
 
@@ -55,7 +55,7 @@ jobs:
 
       - name: Build and Test with Maven
         run: |
-          mvn clean install -pl inventory -am -Drevision=1.0-SNAPSHOT -B
+          mvn clean install -pl sampledata -am -Drevision=1.0-SNAPSHOT -B
         
       - name: Run Snyk to check for vulnerabilities
         continue-on-error: true
@@ -67,7 +67,7 @@ jobs:
           chmod +x snyk
           mv snyk /usr/local/bin/
           snyk test \
-            --file=inventory/pom.xml \
+            --file=sampledata/pom.xml \
             -- -Drevision=1.0-SNAPSHOT
 
       - name: SonarQube Scan
@@ -76,28 +76,11 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           mvn sonar:sonar \
-            -pl inventory -am \
+            -pl sampledata -am \
             -Drevision=1.0-SNAPSHOT \
             -Dsonar.projectKey=baus-9105_yas \
             -Dsonar.organization=ffr-key \
-            -Dsonar.coverage.jacoco.xmlReportPaths=inventory/target/site/jacoco/jacoco.xml
-      - name: Test Results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: Inventory-Service-Unit-Test-Results
-          path: "inventory/**/surefire-reports/*.xml"
-          reporter: java-junit
-      
-      - name: Add coverage report to PR
-        uses: madrapps/jacoco-report@v1.6.1
-        with:
-          paths: ${{ github.workspace }}/inventory/target/site/jacoco/jacoco.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 70
-          min-coverage-changed-files: 70
-          title: 'Inventory Coverage Report'
-          update-comment: true
+            -Dsonar.coverage.jacoco.xmlReportPaths=sampledata/target/site/jacoco/jacoco.xml
 
       - name: Set up Docker Buildx
         if: github.event_name == 'push'
@@ -114,8 +97,8 @@ jobs:
         if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
-          context: ./inventory
+          context: ./sampledata
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/inventory:${{ github.sha }}
-            ${{ github.ref == 'refs/heads/main' && format('{0}/inventory:latest', secrets.DOCKERHUB_USERNAME) || '' }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/sampledata:${{ github.sha }}
+            ${{ github.ref == 'refs/heads/main' && format('{0}/sampledata:latest', secrets.DOCKERHUB_USERNAME) || '' }}
