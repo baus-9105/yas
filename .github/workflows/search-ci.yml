@@ -98,3 +98,21 @@ jobs:
           min-coverage-changed-files: 70
           title: 'Search Coverage Report'
           update-comment: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./search
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/search:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/search:latest
