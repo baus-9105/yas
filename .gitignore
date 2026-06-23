@@ -19,6 +19,7 @@
 *.tar.gz
 *.rar
 target
+.flattened-pom.xml
 
 ### IntelliJ IDEA ###
 .idea
