@@ -50,7 +50,7 @@ pipeline {
                         
                         if (branch == 'main') {
                             serviceTags[svc] = 'latest' 
-                            echo "✅ [${svc}] → branch: main, image tag: latest"
+                            echo "${svc} → branch: main, image tag: latest"
                         } else {
                             def commitId = sh(
                                 script: """
@@ -62,11 +62,11 @@ pipeline {
 
                             // Kiểm tra branch developer nhập vào có tồn tại không
                             if (commitId == '') {
-                                error("❌ Không tìm thấy branch '${branch}' cho service '${svc}'. Vui lòng kiểm tra lại chính tả!")
+                                error("Không tìm thấy branch '${branch}' cho service '${svc}'. Vui lòng kiểm tra lại chính tả!")
                             }
 
                             serviceTags[svc] = commitId
-                            echo "✅ [${svc}] → branch: ${branch}, image tag: ${commitId}"
+                            echo "${svc} → branch: ${branch}, image tag: ${commitId}"
                         }
                     }
 
@@ -129,14 +129,14 @@ pipeline {
 
                     echo """
 ========================================================================
-🎉 DEPLOY THÀNH CÔNG!
+DEPLOY THÀNH CÔNG!
 Môi trường của bạn đã được khởi tạo hoàn tất.
 
-📌 THÔNG TIN MÔI TRƯỜNG:
+THÔNG TIN MÔI TRƯỜNG:
 - Namespace: ${params.DEVELOPER_NAMESPACE}
 - Base URL : http://${env.INGRESS_DOMAIN}
 
-👉 HƯỚNG DẪN TRUY CẬP:
+HƯỚNG DẪN TRUY CẬP:
 Hãy mở file hosts trên máy cá nhân của bạn (Windows: C:\\Windows\\System32\\drivers\\etc\\hosts | Mac/Linux: /etc/hosts)
 và thêm dòng sau:
 
@@ -151,10 +151,10 @@ ${workerIP}    ${env.INGRESS_DOMAIN}
 
     post {
         failure {
-            echo "❌ Deploy thất bại. Vui lòng kiểm tra lại log ở bước báo đỏ phía trên."
+            echo "Deploy thất bại. Vui lòng kiểm tra lại log ở bước báo đỏ phía trên."
         }
         success {
-            echo "✅ Pipeline hoàn tất không có lỗi."
+            echo "Pipeline hoàn tất không có lỗi."
         }
     }
 }
