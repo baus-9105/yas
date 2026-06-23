@@ -1,0 +1,85 @@
+// ============================================================
+// Job: developer_teardown_env
+// Mục đích: Xóa toàn bộ Helm releases và Namespace của Developer
+// ============================================================
+
+pipeline {
+    agent any
+
+    parameters {
+        // Tên namespace cần xóa
+        string(name: 'DEVELOPER_NAMESPACE', defaultValue: 'dev', description: 'Tên K8s namespace muốn xóa')
+        
+        // Checkbox xác nhận để tránh việc bấm nhầm
+        booleanParam(name: 'CONFIRM_DESTROY', defaultValue: false, description: 'VUI LÒNG TÍCH VÀO ĐÂY ĐỂ XÓA TOÀN BỘ')
+    }
+
+    environment {
+        KUBECONFIG = credentials('kubeconfig')
+    }
+
+    stages {
+        stage('Safety Check') {
+            steps {
+                script {
+                    if (!params.CONFIRM_DESTROY) {
+                        error("Hủy bỏ tiến trình: Bạn chưa tích chọn ô CONFIRM_DESTROY.")
+                    }
+                    if (params.DEVELOPER_NAMESPACE == 'default' || params.DEVELOPER_NAMESPACE == 'kube-system') {
+                        error("Không được phép xóa namespace hệ thống!")
+                    }
+                }
+            }
+        }
+
+        stage('Uninstall Helm Releases') {
+            steps {
+                script {
+                    echo "🔍 Đang quét các service (Helm releases) trong namespace: ${params.DEVELOPER_NAMESPACE}..."
+                    
+                    // Lấy danh sách tất cả các release name, bỏ qua lỗi nếu namespace không tồn tại
+                    def releases = sh(
+                        script: "helm ls -q -n ${params.DEVELOPER_NAMESPACE} 2>/dev/null || true",
+                        returnStdout: true
+                    ).trim()
+
+                    if (releases == '') {
+                        echo "Không tìm thấy service nào đang chạy trong namespace ${params.DEVELOPER_NAMESPACE}."
+                    } else {
+                        // Tách danh sách thành mảng và xóa từng cái
+                        def releaseList = releases.split('\n')
+                        releaseList.each { release ->
+                            echo "Đang xóa service: ${release}..."
+                            sh "helm uninstall ${release} -n ${params.DEVELOPER_NAMESPACE} --wait"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Delete K8s Namespace') {
+            steps {
+                script {
+                    echo "Đang xóa hoàn toàn namespace '${params.DEVELOPER_NAMESPACE}'..."
+                    // --ignore-not-found giúp pipeline không bị lỗi màu đỏ nếu namespace đã bị xóa từ trước
+                    sh "kubectl delete namespace ${params.DEVELOPER_NAMESPACE} --ignore-not-found=true"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo """
+========================================================================
+DỌN DẸP HOÀN TẤT!
+Toàn bộ service và namespace '${params.DEVELOPER_NAMESPACE}' đã được xóa.
+Tài nguyên cụm K8s đã được giải phóng.
+========================================================================
+            """
+        }
+        failure {
+            echo "Quá trình dọn dẹp gặp lỗi. Vui lòng kiểm tra log."
+        }
+    }
+}
