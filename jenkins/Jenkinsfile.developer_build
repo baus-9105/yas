@@ -12,17 +12,26 @@ pipeline {
         string(name: 'DEVELOPER_NAMESPACE', defaultValue: 'dev', description: 'Tên K8s namespace của bạn')
         
         // Các service: Để 'main' = dùng tag latest/main. Điền tên branch = dùng commit ID.
+        string(name: 'backoffice-bff', defaultValue: 'main', description: 'Branch cho backoffice-bff service')
+        string(name: 'backoffice',     defaultValue: 'main', description: 'Branch cho backoffice service')
         string(name: 'cart',           defaultValue: 'main', description: 'Branch cho cart service')
-        string(name: 'product',        defaultValue: 'main', description: 'Branch cho product service')
-        string(name: 'order',          defaultValue: 'main', description: 'Branch cho order service')
-        string(name: 'payment',        defaultValue: 'main', description: 'Branch cho payment service')
         string(name: 'customer',       defaultValue: 'main', description: 'Branch cho customer service')
         string(name: 'inventory',      defaultValue: 'main', description: 'Branch cho inventory service')
         string(name: 'location',       defaultValue: 'main', description: 'Branch cho location service')
         string(name: 'media',          defaultValue: 'main', description: 'Branch cho media service')
+        string(name: 'order',          defaultValue: 'main', description: 'Branch cho order service')
+        string(name: 'payment',        defaultValue: 'main', description: 'Branch cho payment service')
+        string(name: 'payment-paypal', defaultValue: 'main', description: 'Branch cho payment-paypal service')
+        string(name: 'product',        defaultValue: 'main', description: 'Branch cho product service')
         string(name: 'promotion',      defaultValue: 'main', description: 'Branch cho promotion service')
         string(name: 'rating',         defaultValue: 'main', description: 'Branch cho rating service')
         string(name: 'recommendation', defaultValue: 'main', description: 'Branch cho recommendation service')
+        string(name: 'sampledata',     defaultValue: 'main', description: 'Branch cho sampledata service')
+        string(name: 'search',         defaultValue: 'main', description: 'Branch cho search service')
+        string(name: 'storefront-bff', defaultValue: 'main', description: 'Branch cho storefront-bff service')
+        string(name: 'storefront',     defaultValue: 'main', description: 'Branch cho storefront service')
+        string(name: 'tax',            defaultValue: 'main', description: 'Branch cho tax service')
+        string(name: 'web-hook',       defaultValue: 'main', description: 'Branch cho web-hook service')
     }
 
     environment {
@@ -38,9 +47,10 @@ pipeline {
                 script {
                     // Danh sách các service lấy từ parameter
                     def services = [
-                        'cart', 'product', 'order', 'payment', 'customer', 
-                        'inventory', 'location', 'media', 'promotion', 
-                        'rating', 'recommendation'
+                        'backoffice-bff', 'backoffice', 'cart', 'customer', 'inventory',
+                        'location', 'media', 'order', 'payment', 'payment-paypal',
+                        'product', 'promotion', 'rating', 'recommendation', 'sampledata',
+                        'search', 'storefront-bff', 'storefront', 'tax', 'web-hook'
                     ]
                     
                     def serviceTags = [:]
