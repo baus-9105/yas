@@ -191,9 +191,19 @@ pipeline {
                     // Tự động lấy External IP của K8s Worker Node
                     def workerIP = sh(
                         script: """
+                            # Đưa thư mục bin vào PATH
+                            export PATH="\${WORKSPACE}/bin:\$PATH"
+                            
+                            # Tải kubectl nếu chưa có
+                            if ! command -v kubectl &> /dev/null; then
+                                curl -fsSL -o "\${WORKSPACE}/bin/kubectl" "https://dl.k8s.io/release/\$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                                chmod +x "\${WORKSPACE}/bin/kubectl"
+                            fi
+                            
+                            # Lấy External IP
                             kubectl get nodes \
                               -l '!node-role.kubernetes.io/control-plane' \
-                              -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}'
+                              -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>/dev/null || true
                         """,
                         returnStdout: true
                     ).trim()
