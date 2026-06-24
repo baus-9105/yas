@@ -1,0 +1,160 @@
+// ============================================================
+// Job: developer_build
+// Mục đích: Cho phép Developer chọn branch để deploy độc lập 
+//           vào namespace riêng biệt sử dụng Helm & Ingress.
+// ============================================================
+
+pipeline {
+    agent any
+
+    parameters {
+        // Tên namespace để cô lập môi trường
+        string(name: 'DEVELOPER_NAMESPACE', defaultValue: 'dev', description: 'Tên K8s namespace của bạn')
+        
+        // Các service: Để 'main' = dùng tag latest/main. Điền tên branch = dùng commit ID.
+        string(name: 'cart',           defaultValue: 'main', description: 'Branch cho cart service')
+        string(name: 'product',        defaultValue: 'main', description: 'Branch cho product service')
+        string(name: 'order',          defaultValue: 'main', description: 'Branch cho order service')
+        string(name: 'payment',        defaultValue: 'main', description: 'Branch cho payment service')
+        string(name: 'customer',       defaultValue: 'main', description: 'Branch cho customer service')
+        string(name: 'inventory',      defaultValue: 'main', description: 'Branch cho inventory service')
+        string(name: 'location',       defaultValue: 'main', description: 'Branch cho location service')
+        string(name: 'media',          defaultValue: 'main', description: 'Branch cho media service')
+        string(name: 'promotion',      defaultValue: 'main', description: 'Branch cho promotion service')
+        string(name: 'rating',         defaultValue: 'main', description: 'Branch cho rating service')
+        string(name: 'recommendation', defaultValue: 'main', description: 'Branch cho recommendation service')
+    }
+
+    environment {
+        // Khai báo các thông tin cấu hình chung
+        DOCKER_HUB_USER = credentials('dockerhub-username')
+        KUBECONFIG      = credentials('kubeconfig')
+        GITHUB_REPO     = 'https://github.com/baus-9105/yas.git'
+    }
+
+    stages {
+        stage('Resolve Image Tags') {
+            steps {
+                script {
+                    // Danh sách các service lấy từ parameter
+                    def services = [
+                        'cart', 'product', 'order', 'payment', 'customer', 
+                        'inventory', 'location', 'media', 'promotion', 
+                        'rating', 'recommendation'
+                    ]
+                    
+                    def serviceTags = [:]
+                    
+                    services.each { svc ->
+                        def branch = params[svc]?.trim() ?: 'main'
+                        
+                        if (branch == 'main') {
+                            serviceTags[svc] = 'latest' 
+                            echo "${svc} → branch: main, image tag: latest"
+                        } else {
+                            def commitId = sh(
+                                script: """
+                                    git ls-remote ${env.GITHUB_REPO} refs/heads/${branch} \
+                                    | awk '{print substr(\$1,1,7)}'
+                                """,
+                                returnStdout: true
+                            ).trim()
+
+                            // Kiểm tra branch developer nhập vào có tồn tại không
+                            if (commitId == '') {
+                                error("Không tìm thấy branch '${branch}' cho service '${svc}'. Vui lòng kiểm tra lại chính tả!")
+                            }
+
+                            serviceTags[svc] = commitId
+                            echo "${svc} → branch: ${branch}, image tag: ${commitId}"
+                        }
+                    }
+
+                    // Lưu map vào JSON string để truyền sang các stage tiếp theo
+                    env.SERVICE_TAGS_JSON = groovy.json.JsonOutput.toJson(serviceTags)
+                }
+            }
+        }
+
+        stage('Deploy Services via Helm') {
+            steps {
+                script {
+                    def serviceTags = new groovy.json.JsonSlurper().parseText(env.SERVICE_TAGS_JSON)
+                    
+                    // Tạo domain theo tên namespace để tránh đụng độ giữa các Dev
+                    def ingressDomain = "api-${params.DEVELOPER_NAMESPACE}.yas.local.com"
+                    env.INGRESS_DOMAIN = ingressDomain // Dùng để in kết quả
+                    
+                    serviceTags.each { svc, tag ->
+                        echo "Đang deploy ${svc}:${tag} vào namespace '${params.DEVELOPER_NAMESPACE}'..."
+
+                        // --wait giúp Helm tự động chờ đến khi Pod Ready
+                        // --create-namespace tự động tạo namespace nếu chưa có
+                        sh """
+                            helm dependency build k8s/charts/${svc} || true
+                            helm upgrade --install ${svc} k8s/charts/${svc} \
+                                --namespace ${params.DEVELOPER_NAMESPACE} \
+                                --create-namespace \
+                                --set backend.image.repository=${env.DOCKER_HUB_USER}/yas-${svc} \
+                                --set backend.image.tag=${tag} \
+                                --set backend.ingress.host=${ingressDomain} \
+                                --wait \
+                                --timeout 120s
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Print Access Info') {
+            steps {
+                script {
+                    // Tự động lấy External IP của K8s Worker Node
+                    def workerIP = sh(
+                        script: """
+                            kubectl get nodes \
+                              -l '!node-role.kubernetes.io/control-plane' \
+                              -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    // Fallback nếu cụm K8s không có ExternalIP (vd chạy minikube/kind)
+                    if (workerIP == '') {
+                        workerIP = sh(
+                            script: "kubectl get nodes -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[0].status.addresses[?(@.type==\"InternalIP\")].address}'",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    echo """
+========================================================================
+DEPLOY THÀNH CÔNG!
+Môi trường của bạn đã được khởi tạo hoàn tất.
+
+THÔNG TIN MÔI TRƯỜNG:
+- Namespace: ${params.DEVELOPER_NAMESPACE}
+- Base URL : http://${env.INGRESS_DOMAIN}
+
+HƯỚNG DẪN TRUY CẬP:
+Hãy mở file hosts trên máy cá nhân của bạn (Windows: C:\\Windows\\System32\\drivers\\etc\\hosts | Mac/Linux: /etc/hosts)
+và thêm dòng sau:
+
+${workerIP}    ${env.INGRESS_DOMAIN}
+
+========================================================================
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "Deploy thất bại. Vui lòng kiểm tra lại log ở bước báo đỏ phía trên."
+        }
+        success {
+            echo "Pipeline hoàn tất không có lỗi."
+        }
+    }
+}
