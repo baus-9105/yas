@@ -21,17 +21,17 @@ pipeline {
         string(name: 'media',          defaultValue: 'main', description: 'Branch cho media service')
         string(name: 'order',          defaultValue: 'main', description: 'Branch cho order service')
         string(name: 'payment',        defaultValue: 'main', description: 'Branch cho payment service')
-        string(name: 'payment-paypal', defaultValue: 'main', description: 'Branch cho payment-paypal service')
+        // string(name: 'payment-paypal', defaultValue: 'main', description: 'Branch cho payment-paypal service')
         string(name: 'product',        defaultValue: 'main', description: 'Branch cho product service')
         string(name: 'promotion',      defaultValue: 'main', description: 'Branch cho promotion service')
         string(name: 'rating',         defaultValue: 'main', description: 'Branch cho rating service')
-        string(name: 'recommendation', defaultValue: 'main', description: 'Branch cho recommendation service')
+        // string(name: 'recommendation', defaultValue: 'main', description: 'Branch cho recommendation service')
         string(name: 'sampledata',     defaultValue: 'main', description: 'Branch cho sampledata service')
         string(name: 'search',         defaultValue: 'main', description: 'Branch cho search service')
         string(name: 'storefront-bff', defaultValue: 'main', description: 'Branch cho storefront-bff service')
         string(name: 'storefront',     defaultValue: 'main', description: 'Branch cho storefront service')
         string(name: 'tax',            defaultValue: 'main', description: 'Branch cho tax service')
-        string(name: 'web-hook',       defaultValue: 'main', description: 'Branch cho web-hook service')
+        // string(name: 'web-hook',       defaultValue: 'main', description: 'Branch cho web-hook service')
     }
 
     environment {
@@ -48,9 +48,9 @@ pipeline {
                     // Danh sách các service lấy từ parameter
                     def services = [
                         'backoffice-bff', 'backoffice', 'cart', 'customer', 'inventory',
-                        'location', 'media', 'order', 'payment', 'payment-paypal',
-                        'product', 'promotion', 'rating', 'recommendation', 'sampledata',
-                        'search', 'storefront-bff', 'storefront', 'tax', 'web-hook'
+                        'location', 'media', 'order', 'payment',
+                        'product', 'promotion', 'rating', 'sampledata',
+                        'search', 'storefront-bff', 'storefront', 'tax'
                     ]
                     
                     def serviceTags = [:]
@@ -92,8 +92,12 @@ pipeline {
                     def serviceTags = readJSON text: env.SERVICE_TAGS_JSON
                     
                     // Tạo domain theo tên namespace để tránh đụng độ giữa các Dev
-                    def ingressDomain = "api-${params.DEVELOPER_NAMESPACE}.yas.local.com"
-                    env.INGRESS_DOMAIN = ingressDomain // Dùng để in kết quả
+                    def apiDomain        = "api-${params.DEVELOPER_NAMESPACE}.yas.local.com"
+                    def storefrontDomain = "storefront-${params.DEVELOPER_NAMESPACE}.yas.local.com"
+                    def backofficeDomain = "backoffice-${params.DEVELOPER_NAMESPACE}.yas.local.com"
+                    env.API_DOMAIN = apiDomain
+                    env.STOREFRONT_DOMAIN = storefrontDomain
+                    env.BACKOFFICE_DOMAIN = backofficeDomain
 
                     echo "Cài đặt Helm"
                     sh """
@@ -120,24 +124,44 @@ pipeline {
                             --create-namespace \
                             --wait
                     """
+
+                    echo "Cài đặt swagger-ui"
+                    sh """
+                        export PATH="\${WORKSPACE}/bin:\$PATH"
+                        
+                        helm dependency build k8s/charts/swagger-ui || true
+                        helm upgrade --install swagger-ui k8s/charts/swagger-ui \
+                            --namespace ${params.DEVELOPER_NAMESPACE} \
+                            --create-namespace \
+                            --set ingress.host=${apiDomain} \
+                            --wait \
+                            --timeout 120s
+                    """
                     
                     serviceTags.each { svc, tag ->
-                        echo "Đang deploy ${svc}:${tag} vào namespace '${params.DEVELOPER_NAMESPACE}'..."
+                        // 1. Xác định domain nào sẽ được dùng cho service này
+                        def targetDomain = apiDomain // Mặc định là api
+                        
+                        if (svc.startsWith('storefront')) {
+                            targetDomain = storefrontDomain
+                        } else if (svc.startsWith('backoffice')) {
+                            targetDomain = backofficeDomain
+                        }
 
-                        // --wait giúp Helm tự động chờ đến khi Pod Ready
-                        // --create-namespace tự động tạo namespace nếu chưa có
+                        echo "🚀 Đang deploy ${svc}:${tag} -> Cổng: ${targetDomain}"
+                        
+                        // 2. Deploy bằng Helm
                         sh """
-                            export PATH="\${WORKSPACE}/bin:\${PATH}"
+                            export PATH="\${WORKSPACE}/bin:\$PATH"
                             
                             helm dependency build k8s/charts/${svc} || true
+                            
                             helm upgrade --install ${svc} k8s/charts/${svc} \
                                 --namespace ${params.DEVELOPER_NAMESPACE} \
                                 --create-namespace \
-                                --set backend.image.repository=${env.DOCKER_HUB_USER}/yas-${svc} \
+                                --set backend.image.repository=\${DOCKER_HUB_USER}/yas-${svc} \
                                 --set backend.image.tag=${tag} \
-                                --set backend.ingress.host=${ingressDomain} \
-                                --wait \
-                                --timeout 120s
+                                --set backend.ingress.host=${targetDomain}
                         """
                     }
                 }
@@ -172,13 +196,17 @@ Môi trường của bạn đã được khởi tạo hoàn tất.
 
 THÔNG TIN MÔI TRƯỜNG:
 - Namespace: ${params.DEVELOPER_NAMESPACE}
-- Base URL : http://${env.INGRESS_DOMAIN}
+- API URL        : http://${env.API_DOMAIN}
+- Storefront URL : http://${env.STOREFRONT_DOMAIN}
+- Backoffice URL : http://${env.BACKOFFICE_DOMAIN}
 
 HƯỚNG DẪN TRUY CẬP:
 Hãy mở file hosts trên máy cá nhân của bạn (Windows: C:\\Windows\\System32\\drivers\\etc\\hosts | Mac/Linux: /etc/hosts)
 và thêm dòng sau:
 
-${workerIP}    ${env.INGRESS_DOMAIN}
+${workerIP}    ${env.API_DOMAIN}
+${workerIP}    ${env.STOREFRONT_DOMAIN}
+${workerIP}    ${env.BACKOFFICE_DOMAIN}
 
 ========================================================================
                     """
@@ -189,7 +217,7 @@ ${workerIP}    ${env.INGRESS_DOMAIN}
 
     post {
         failure {
-            echo "Deploy thất bại. Vui lòng kiểm tra lại log ở bước báo đỏ phía trên."
+            echo "Deploy thất bại. Vui lòng kiểm tra lại log."
         }
         success {
             echo "Pipeline hoàn tất không có lỗi."
