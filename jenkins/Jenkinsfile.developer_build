@@ -98,9 +98,11 @@ pipeline {
                     echo "Cài đặt Helm"
                     sh """
                         mkdir -p "\${WORKSPACE}/bin"
+                        export PATH="\${WORKSPACE}/bin:\$PATH"
+                        
                         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
                         chmod 700 get_helm.sh
-                        USE_SUDO="false" HELM_INSTALL_DIR="\${WORKSPACE}/bin" ./get_helm.sh
+                        USE_SUDO="false" HELM_INSTALL_DIR="\${WORKSPACE}/bin" DESIRED_VERSION="v3.20.0" ./get_helm.sh
                     """
 
                     echo "Cài đặt yas-configuration"
