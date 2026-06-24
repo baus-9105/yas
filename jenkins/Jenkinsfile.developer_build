@@ -176,7 +176,7 @@ pipeline {
                             helm upgrade --install ${chartName} k8s/charts/${chartName} \
                                 --namespace ${params.DEVELOPER_NAMESPACE} \
                                 --create-namespace \
-                                --set backend.image.repository=\${DOCKER_HUB_USER}/yas-${svc} \
+                                --set backend.image.repository=\${DOCKER_HUB_USER}/${svc} \
                                 --set backend.image.tag=${tag} \
                                 ${ingressParam}
                         """
