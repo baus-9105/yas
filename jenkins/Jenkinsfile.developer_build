@@ -191,30 +191,23 @@ pipeline {
                     // Tự động lấy External IP của K8s Worker Node
                     def workerIP = sh(
                         script: """
-                            # Đưa thư mục bin vào PATH
                             export PATH="\${WORKSPACE}/bin:\$PATH"
                             
-                            # Tải kubectl nếu chưa có
-                            if ! command -v kubectl &> /dev/null; then
-                                curl -fsSL -o "\${WORKSPACE}/bin/kubectl" "https://dl.k8s.io/release/\$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                                chmod +x "\${WORKSPACE}/bin/kubectl"
+                            IP=\$(kubectl get nodes -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>/dev/null || true)
+                            
+                            if [ -z "\$IP" ]; then
+                                IP=\$(curl -s ifconfig.me 2>/dev/null || true)
                             fi
                             
-                            # Lấy External IP
-                            kubectl get nodes \
-                              -l '!node-role.kubernetes.io/control-plane' \
-                              -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>/dev/null || true
+                            if [ -z "\$IP" ]; then
+                                IP="<KHONG_LAY_DUOC_IP>"
+                            fi
+                            
+                            echo "\$IP"
                         """,
                         returnStdout: true
                     ).trim()
 
-                    // Fallback nếu cụm K8s không có ExternalIP (vd chạy minikube/kind)
-                    if (workerIP == '') {
-                        workerIP = sh(
-                            script: "kubectl get nodes -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[0].status.addresses[?(@.type==\"InternalIP\")].address}'",
-                            returnStdout: true
-                        ).trim()
-                    }
 
                     echo """
 ========================================================================
@@ -247,7 +240,7 @@ ${workerIP}    ${env.BACKOFFICE_DOMAIN}
             echo "Deploy thất bại. Vui lòng kiểm tra lại log."
         }
         success {
-            echo "Pipeline hoàn tất không có lỗi."
+            echo "Deploy thành công!"
         }
     }
 }
