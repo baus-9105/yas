@@ -139,29 +139,46 @@ pipeline {
                     """
                     
                     serviceTags.each { svc, tag ->
-                        // 1. Xác định domain nào sẽ được dùng cho service này
-                        def targetDomain = apiDomain // Mặc định là api
-                        
-                        if (svc.startsWith('storefront')) {
-                            targetDomain = storefrontDomain
-                        } else if (svc.startsWith('backoffice')) {
-                            targetDomain = backofficeDomain
+                        // 1. Tên chart
+                        def chartName = svc
+                        if (svc == 'backoffice') {
+                            chartName = 'backoffice-ui'
+                        } else if (svc == 'storefront') {
+                            chartName = 'storefront-ui'
                         }
 
-                        echo "🚀 Đang deploy ${svc}:${tag} -> Cổng: ${targetDomain}"
+                        // 2. Xác định domain và ingress
+                        def ingressParam = "" 
+                        def targetDomain = ""
                         
-                        // 2. Deploy bằng Helm
+                        if (svc == 'backoffice-bff') {
+                            targetDomain = backofficeDomain
+                            ingressParam = "--set backend.ingress.host=${targetDomain}"
+                        } else if (svc == 'storefront-bff') {
+                            targetDomain = storefrontDomain
+                            ingressParam = "--set backend.ingress.host=${targetDomain}"
+                        } else if (chartName.endsWith('-ui')) {
+                            targetDomain = "Internal (Không có External Route)"
+                            ingressParam = ""
+                        } else {
+                            targetDomain = apiDomain
+                            ingressParam = "--set backend.ingress.host=${targetDomain}"
+                        }
+
+                        echo "Đang deploy ${svc}:${tag} -> Cổng: ${targetDomain}"
+                        
+                        // 3. Deploy bằng Helm
                         sh """
                             export PATH="\${WORKSPACE}/bin:\$PATH"
                             
-                            helm dependency build k8s/charts/${svc} || true
+                            helm dependency build k8s/charts/${chartName} || true
                             
-                            helm upgrade --install ${svc} k8s/charts/${svc} \
+                            helm upgrade --install ${chartName} k8s/charts/${chartName} \
                                 --namespace ${params.DEVELOPER_NAMESPACE} \
                                 --create-namespace \
                                 --set backend.image.repository=\${DOCKER_HUB_USER}/yas-${svc} \
                                 --set backend.image.tag=${tag} \
-                                --set backend.ingress.host=${targetDomain}
+                                ${ingressParam}
                         """
                     }
                 }
