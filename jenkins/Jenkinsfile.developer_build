@@ -97,9 +97,26 @@ pipeline {
 
                     echo "Cài đặt Helm"
                     sh """
+                        mkdir -p "\${WORKSPACE}/bin"
                         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
                         chmod 700 get_helm.sh
-                        ./get_helm.sh
+                        USE_SUDO="false" HELM_INSTALL_DIR="\${WORKSPACE}/bin" ./get_helm.sh
+                    """
+
+                    echo "Cài đặt yas-configuration"
+                    sh """
+                        export PATH="\${WORKSPACE}/bin:\$PATH"
+                        
+                        # Thêm repo stakater
+                        helm repo add stakater https://stakater.github.io/stakater-charts
+                        helm repo update
+                        
+                        # Deploy yas-configuration vào namespace CỦA DEVELOPER ĐÓ
+                        helm dependency build k8s/charts/yas-configuration || true
+                        helm upgrade --install yas-configuration k8s/charts/yas-configuration \
+                            --namespace ${params.DEVELOPER_NAMESPACE} \
+                            --create-namespace \
+                            --wait
                     """
                     
                     serviceTags.each { svc, tag ->
@@ -108,6 +125,8 @@ pipeline {
                         // --wait giúp Helm tự động chờ đến khi Pod Ready
                         // --create-namespace tự động tạo namespace nếu chưa có
                         sh """
+                            export PATH="\${WORKSPACE}/bin:\${PATH}"
+                            
                             helm dependency build k8s/charts/${svc} || true
                             helm upgrade --install ${svc} k8s/charts/${svc} \
                                 --namespace ${params.DEVELOPER_NAMESPACE} \
