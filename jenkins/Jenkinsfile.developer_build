@@ -89,7 +89,7 @@ pipeline {
         stage('Deploy Services via Helm') {
             steps {
                 script {
-                    def serviceTags = new groovy.json.JsonSlurper().parseText(env.SERVICE_TAGS_JSON)
+                    def serviceTags = new groovy.json.JsonSlurperClassic().parseText(env.SERVICE_TAGS_JSON)
                     
                     // Tạo domain theo tên namespace để tránh đụng độ giữa các Dev
                     def ingressDomain = "api-${params.DEVELOPER_NAMESPACE}.yas.local.com"
@@ -101,6 +101,10 @@ pipeline {
                         // --wait giúp Helm tự động chờ đến khi Pod Ready
                         // --create-namespace tự động tạo namespace nếu chưa có
                         sh """
+                            curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
+                            chmod 700 get_helm.sh
+                            ./get_helm.sh
+
                             helm dependency build k8s/charts/${svc} || true
                             helm upgrade --install ${svc} k8s/charts/${svc} \
                                 --namespace ${params.DEVELOPER_NAMESPACE} \
