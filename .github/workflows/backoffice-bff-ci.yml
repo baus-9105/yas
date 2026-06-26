@@ -97,3 +97,25 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/backoffice-bff:${{ github.sha }}
             ${{ github.event_name == 'push' && format('{0}/backoffice-bff:latest', secrets.DOCKERHUB_USERNAME) || '' }}
+
+  update-dev:
+    needs: build-and-test 
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/gitops-updater.yml
+    with:
+      service_name: 'backoffice-bff'
+      environment: 'dev'
+      image_tag: ${{ github.sha }}
+    secrets:
+      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+
+  update-staging:
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/v')
+    uses: ./.github/workflows/gitops-updater.yml
+    with:
+      service_name: 'backoffice-bff'
+      environment: 'staging'
+      image_tag: ${{ github.ref_name }}
+    secrets:
+      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
