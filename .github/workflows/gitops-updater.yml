@@ -37,8 +37,8 @@ jobs:
           git config user.name "GitHub Actions"
           
           CHART_NAME="${{ inputs.service_name }}"
-          if [ ${{ inputs.service_name }} == "backoffice" || ${{ inputs.service_name }} == "storefront" ]; then
-            CHART_NAME="${{ inputs.service_name }}-ui"
+          if [[ "$CHART_NAME" == "backoffice" || "$CHART_NAME" == "storefront" ]]; then
+            CHART_NAME="${CHART_NAME}-ui"
           fi
 
           TARGET_FILE="environments/${{ inputs.environment }}/$CHART_NAME/values.yaml"
