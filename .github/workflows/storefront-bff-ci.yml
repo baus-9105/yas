@@ -3,6 +3,8 @@ name: Storefront-BFF Service CI
 on:
   push:
     branches: [ "**" ]
+    tags:
+      - "v*"
     paths:
       - "storefront-bff/**"
       - ".github/workflows/storefront-bff-ci.yml"
@@ -107,6 +109,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/storefront-bff:${{ github.sha }}
             ${{ github.event_name == 'push' && format('{0}/storefront-bff:latest', secrets.DOCKERHUB_USERNAME) || '' }}
+            ${{ startsWith(github.ref, 'refs/tags/v') && format('{0}/storefront-bff:{1}', secrets.DOCKERHUB_USERNAME, github.ref_name) || '' }}
   
   update-dev:
     needs: build-and-test 

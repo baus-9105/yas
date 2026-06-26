@@ -3,6 +3,8 @@ name: Sample Data Service CI
 on:
   push:
     branches: [ "**" ]
+    tags:
+      - "v*"
     paths:
       - "sampledata/**"
       - "common-library/**"
@@ -102,6 +104,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/sampledata:${{ github.sha }}
             ${{ github.ref == 'refs/heads/main' && format('{0}/sampledata:latest', secrets.DOCKERHUB_USERNAME) || '' }}
+            ${{ startsWith(github.ref, 'refs/tags/v') && format('{0}/sampledata:{1}', secrets.DOCKERHUB_USERNAME, github.ref_name) || '' }}
   
   update-dev:
     needs: build-and-test 
