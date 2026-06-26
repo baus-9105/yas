@@ -7,13 +7,13 @@ on:
       - "v*"
     paths:
       - "backoffice/**"
-      - ".github/workflows/backoffice-ci.yaml"
+      - ".github/workflows/backoffice-ci.yml"
 
   pull_request:
     branches: [ "main" ]
     paths:
       - "backoffice/**"
-      - ".github/workflows/backoffice-ci.yaml"
+      - ".github/workflows/backoffice-ci.yml"
   workflow_dispatch:
 
 jobs:

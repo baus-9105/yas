@@ -7,13 +7,13 @@ on:
       - "v*"
     paths:
       - "storefront/**"
-      - ".github/workflows/storefront-ci.yaml"
+      - ".github/workflows/storefront-ci.yml"
 
   pull_request:
     branches: [ "main" ]
     paths:
       - "storefront/**"
-      - ".github/workflows/storefront-ci.yaml"
+      - ".github/workflows/storefront-ci.yml"
   workflow_dispatch:
 
 jobs:
