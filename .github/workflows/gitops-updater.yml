@@ -48,5 +48,18 @@ jobs:
           
           git add $TARGET_FILE
           git commit -m "ci(${{ inputs.environment }}): update ${{ inputs.service_name }} to $TAG"
-          git pull --rebase origin main
-          git push origin main
+
+          MAX_RETRIES=5
+          for i in $(seq 1 $MAX_RETRIES); do
+            if git pull --rebase origin main && git push origin main; then
+              echo "Push successful!"
+              break
+            else
+              echo "Push failed. Retrying in 5 seconds... ($i/$MAX_RETRIES)"
+              if [ $i -eq $MAX_RETRIES ]; then
+                echo "Failed to push after $MAX_RETRIES attempts."
+                exit 1
+              fi
+              sleep 5
+            fi
+          done
