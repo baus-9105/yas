@@ -3,6 +3,8 @@ name: Cart Service CI
 on:
   push:
     branches: [ "**" ]
+    tags:
+      - 'v*'
     paths:
       - "cart/**"
       - "common-library/**"
@@ -119,3 +121,26 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/cart:${{ github.sha }}
             ${{ github.ref == 'refs/heads/main' && format('{0}/cart:latest', secrets.DOCKERHUB_USERNAME) || '' }}
+            ${{ startsWith(github.ref, 'refs/tags/v') && format('{0}/cart:{1}', secrets.DOCKERHUB_USERNAME, github.ref_name) || '' }}
+  
+  update-dev:
+    needs: build-and-test 
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/gitops-updater.yml
+    with:
+      service_name: 'cart'
+      environment: 'dev'
+      image_tag: ${{ github.sha }}
+    secrets:
+      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+
+  update-staging:
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/v')
+    uses: ./.github/workflows/gitops-updater.yml
+    with:
+      service_name: 'cart'
+      environment: 'staging'
+      image_tag: ${{ github.ref_name }}
+    secrets:
+      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}

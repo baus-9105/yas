@@ -1,0 +1,52 @@
+name: Reusable GitOps Updater
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+        description: "Tên của microservice (ví dụ: cart, payment)"
+      environment:
+        required: true
+        type: string
+        description: "Môi trường deploy (dev hoặc staging)"
+      image_tag:
+        required: true
+        type: string
+        description: "Tag của Docker Image cần deploy"
+    secrets:
+      GITOPS_TOKEN:
+        required: true
+
+jobs:
+  update-gitops:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: ndbau/yas-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: yas-gitops
+
+      - name: Update file values.yaml and Push to GitOps Repository
+        run: |
+          cd yas-gitops
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          
+          CHART_NAME="${{ inputs.service_name }}"
+          if [ ${{ inputs.service_name }} == "backoffice" || ${{ inputs.service_name }} == "storefront" ]; then
+            CHART_NAME="${{ inputs.service_name }}-ui"
+          fi
+
+          TARGET_FILE="environments/${{ inputs.environment }}/$CHART_NAME/values.yaml"
+          TAG="${{ inputs.image_tag }}"
+          
+          yq e ".image.tag = \"${TAG}\"" -i $TARGET_FILE
+          
+          git add $TARGET_FILE
+          git commit -m "ci(${{ inputs.environment }}): update ${{ inputs.service_name }} to $TAG"
+          git pull --rebase origin main
+          git push origin main
