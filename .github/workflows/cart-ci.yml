@@ -83,6 +83,7 @@ jobs:
             -Dsonar.projectKey=ffr-key_yas-cart \
             -Dsonar.organization=ffr-key \
             -Dsonar.coverage.jacoco.xmlReportPaths=cart/target/site/jacoco/jacoco.xml
+
       - name: Test Results
         uses: dorny/test-reporter@v1
         if: success() || failure()
