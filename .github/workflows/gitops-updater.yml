@@ -44,7 +44,7 @@ jobs:
           TARGET_FILE="environments/${{ inputs.environment }}/$CHART_NAME/values.yaml"
           TAG="${{ inputs.image_tag }}"
           
-          yq e ".image.tag = \"${TAG}\"" -i $TARGET_FILE
+          yq e ".backend.image.tag = \"${TAG}\"" -i $TARGET_FILE
           
           git add $TARGET_FILE
           git commit -m "ci(${{ inputs.environment }}): update ${{ inputs.service_name }} to $TAG"
