@@ -65,9 +65,9 @@ applicationConfig:
       username: ${POSTGRESQL_USERNAME}
       password: ${POSTGRESQL_PASSWORD}
     kafka:
-      bootstrap-servers: kafka-cluster-kafka-brokers.kafka:9092
+      bootstrap-servers: kafka-cluster-kafka-bootstrap.kafka:9092
       consumer:
-        bootstrap-servers: kafka-cluster-kafka-brokers.kafka:9092
+        bootstrap-servers: kafka-cluster-kafka-bootstrap.kafka:9092
 
   springdoc:
     oauthflow:
