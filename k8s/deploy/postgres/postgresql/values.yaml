@@ -6,8 +6,8 @@ volumeSize: "10Gi"
 maxConnections: "500"
 resources:
   requests:
-    cpu: 100m
-    memory: 100Mi
-  limits:
     cpu: 500m
     memory: 500Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
