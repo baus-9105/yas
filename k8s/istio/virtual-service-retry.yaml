@@ -1,0 +1,259 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: cart-retry
+  namespace: yas
+spec:
+  hosts:
+  - cart
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: cart
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: customer-retry
+  namespace: yas
+spec:
+  hosts:
+  - customer
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: customer
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: inventory-retry
+  namespace: yas
+spec:
+  hosts:
+  - inventory
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: inventory
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: location-retry
+  namespace: yas
+spec:
+  hosts:
+  - location
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: location
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: media-retry
+  namespace: yas
+spec:
+  hosts:
+  - media
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: media
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: order-retry
+  namespace: yas
+spec:
+  hosts:
+  - order
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: order
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: payment-retry
+  namespace: yas
+spec:
+  hosts:
+  - payment
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: payment
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: product-retry
+  namespace: yas
+spec:
+  hosts:
+  - product
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: product
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: promotion-retry
+  namespace: yas
+spec:
+  hosts:
+  - promotion
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: promotion
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: rating-retry
+  namespace: yas
+spec:
+  hosts:
+  - rating
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: rating
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: sampledata-retry
+  namespace: yas
+spec:
+  hosts:
+  - sampledata
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: sampledata
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: search-retry
+  namespace: yas
+spec:
+  hosts:
+  - search
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: search
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: tax-retry
+  namespace: yas
+spec:
+  hosts:
+  - tax
+  http:
+  - retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+    timeout: 30s
+    route:
+    - destination:
+        host: tax
+        port:
+          number: 80
