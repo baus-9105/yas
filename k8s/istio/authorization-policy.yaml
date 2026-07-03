@@ -1,0 +1,303 @@
+# 1. Mặc định: deny all traffic trong namespace yas
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: yas
+spec:
+  {}   # không có rules → deny tất cả
+---
+# 2. Các Frontend/UI cho phép Ingress gọi tới
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-storefront-bff
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: storefront-bff
+  rules:
+  - {} # Mở cửa cho Ingress (vì Ingress gọi vào bằng HTTP trần, không có mTLS ID)
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-backoffice-bff
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: backoffice-bff
+  rules:
+  - {} # Mở cửa cho Ingress (vì Ingress gọi vào bằng HTTP trần, không có mTLS ID)
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-storefront-ui
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: storefront-ui
+  rules:
+  - {} # Mở cửa cho Ingress (vì Ingress gọi vào bằng HTTP trần, không có mTLS ID)
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-backoffice-ui
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: backoffice-ui
+  rules:
+  - {} # Mở cửa cho Ingress (vì Ingress gọi vào bằng HTTP trần, không có mTLS ID)
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-swagger-ui
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: swagger-ui
+  rules:
+  - {} # Mở cửa cho Ingress (vì Ingress gọi vào bằng HTTP trần, không có mTLS ID)
+---
+# 3. Product: Được gọi bởi rất nhiều service
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-product
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: product
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+        - "cluster.local/ns/yas/sa/cart"
+        - "cluster.local/ns/yas/sa/order"
+        - "cluster.local/ns/yas/sa/rating"
+        - "cluster.local/ns/yas/sa/inventory"
+        - "cluster.local/ns/yas/sa/promotion"
+        - "cluster.local/ns/yas/sa/sampledata"
+        - "cluster.local/ns/yas/sa/search"
+---
+# 4. Cart: Được gọi bởi BFFs và Order
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-cart
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: cart
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+        - "cluster.local/ns/yas/sa/order"
+---
+# 5. Order: Được gọi bởi BFFs, Rating, Payment
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-order
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: order
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+        - "cluster.local/ns/yas/sa/rating"
+        - "cluster.local/ns/yas/sa/payment"
+---
+# 6. Customer: Được gọi bởi BFFs, Order, Rating
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-customer
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: customer
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+        - "cluster.local/ns/yas/sa/order"
+        - "cluster.local/ns/yas/sa/rating"
+---
+# 7. Location: Được gọi bởi BFFs, Inventory, Customer, Tax
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-location
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: location
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+        - "cluster.local/ns/yas/sa/inventory"
+        - "cluster.local/ns/yas/sa/customer"
+        - "cluster.local/ns/yas/sa/tax"
+---
+# 8. Media: Được gọi bởi BFFs, Payment
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-media
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: media
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+        - "cluster.local/ns/yas/sa/payment"
+---
+# 9. Các services chỉ được gọi bởi BFFs
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-inventory
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: inventory
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-rating
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: rating
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-payment
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: payment
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-search
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: search
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-sampledata
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: sampledata
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+---
+# 10. Tax & Promotion: Được gọi bởi BFFs và Order
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-tax
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: tax
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+        - "cluster.local/ns/yas/sa/order"
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-promotion
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app: promotion
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/yas/sa/storefront-bff"
+        - "cluster.local/ns/yas/sa/backoffice-bff"
+        - "cluster.local/ns/yas/sa/order"
