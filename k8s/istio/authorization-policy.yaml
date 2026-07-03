@@ -185,6 +185,7 @@ spec:
         - "cluster.local/ns/yas/sa/storefront-bff"
         - "cluster.local/ns/yas/sa/backoffice-bff"
         - "cluster.local/ns/yas/sa/payment"
+        - "cluster.local/ns/yas/sa/product"
 ---
 # 9. Các services chỉ được gọi bởi BFFs
 apiVersion: security.istio.io/v1
