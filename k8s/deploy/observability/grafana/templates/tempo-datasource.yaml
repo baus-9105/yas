@@ -11,7 +11,7 @@ spec:
     type: tempo
     uid: tempo
     access: proxy
-    url: http://tempo:3100
+    url: http://tempo:3200
     jsonData:
       httpMethod: GET
       tracesToLogsV2:
