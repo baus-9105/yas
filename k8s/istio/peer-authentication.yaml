@@ -5,7 +5,4 @@ metadata:
   namespace: yas
 spec:
   mtls:
-    mode: STRICT
-  portLevelMtls:
-    8090:
-      mode: PERMISSIVE
+    mode: PERMISSIVE
