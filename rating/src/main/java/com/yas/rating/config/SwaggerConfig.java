@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
         security = @SecurityRequirement(name = "oauth2_bearer"),
         servers = {
             @Server(
-                  url = "${server.servlet.context-path}",
+                  url = "/api${server.servlet.context-path}",
                   description = "Default Server URL")
             }
 )

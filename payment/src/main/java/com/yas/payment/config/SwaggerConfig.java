@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
     info = @Info(title = "Payment Service API", description = "Payment API documentation", version = "1.0"),
     security = @SecurityRequirement(name = "oauth2_bearer"),
     servers = {
-        @Server(url = "${server.servlet.context-path}", description = "Default Server URL")
+        @Server(url = "/api${server.servlet.context-path}", description = "Default Server URL")
     }
 )
 @SecurityScheme(
