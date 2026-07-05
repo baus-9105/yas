@@ -98,7 +98,9 @@ services:
     networks:
       - yas-network
   media:
-    build: ./media  
+    build:
+      context: .
+      dockerfile: media/Dockerfile
     image: ghcr.io/nashtech-garage/yas-media:latest
     environment:
     - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/media
