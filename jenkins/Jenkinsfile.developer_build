@@ -65,7 +65,7 @@ pipeline {
                             def commitId = sh(
                                 script: """
                                     git ls-remote ${env.GITHUB_REPO} refs/heads/${branch} \
-                                    | awk '{print substr(\$1,1,7)}'
+                                    | awk '{print \$1}'
                                 """,
                                 returnStdout: true
                             ).trim()
