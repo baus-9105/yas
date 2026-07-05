@@ -15,10 +15,27 @@ spec:
   config:
     config.providers: secrets
     config.providers.secrets.class: io.strimzi.kafka.KubernetesSecretConfigProvider
-    # -1 means it will use the default replication factor configured in the broker
     config.storage.replication.factor: -1
     offset.storage.replication.factor: -1
     status.storage.replication.factor: -1
+    group.id: connect-cluster
+    key.converter: org.apache.kafka.connect.json.JsonConverter
+    key.converter.schemas.enable: false
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter.schemas.enable: false
+  livenessProbe:
+    initialDelaySeconds: 3600
+  readinessProbe:
+    initialDelaySeconds: 3600
+  template:
+    connectContainer:
+      volumeMounts:
+        - name: kafka-connect-configurations
+          mountPath: /tmp/strimzi-connect.properties
+          subPath: kafka-connect.properties
+        - name: kafka-connect-configurations
+          mountPath: /opt/kafka/custom-config/log4j.properties
+          subPath: log4j2.properties
   {{- if eq .Values.debeziumConnect.buildImage true }}
   build:
     output:

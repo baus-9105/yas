@@ -9,8 +9,8 @@ spec:
   config:
     database.hostname: postgresql.postgres
     database.port: 5432
-    database.user: ${secrets:postgresql.credentials:username}
-    database.password: ${secrets:postgresql.credentials:password}
+    database.user: yasadminuser
+    database.password: admin
     topic.prefix: dbproduct
     database.dbname: product
     table.include.list: public.product
