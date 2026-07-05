@@ -24,9 +24,13 @@ spec:
     value.converter: org.apache.kafka.connect.json.JsonConverter
     value.converter.schemas.enable: false
   livenessProbe:
-    initialDelaySeconds: 3600
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 100000
   readinessProbe:
-    initialDelaySeconds: 3600
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 100000
   template:
     connectContainer:
       volumeMounts:
