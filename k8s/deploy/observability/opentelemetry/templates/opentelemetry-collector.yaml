@@ -3,6 +3,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: opentelemetry
 spec:
+  image: otel/opentelemetry-collector-contrib:0.100.0
   mode: deployment
   ports:
     - name: loki
