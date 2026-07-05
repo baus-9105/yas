@@ -9,7 +9,7 @@ pipeline {
 
     parameters {
         // Tên namespace để cô lập môi trường
-        string(name: 'DEVELOPER_NAMESPACE', defaultValue: 'dev', description: 'Tên K8s namespace của bạn')
+        string(name: 'DEVELOPER_NAMESPACE', defaultValue: 'test', description: 'Tên K8s namespace của bạn')
         
         // Các service: Để 'main' = dùng tag latest/main. Điền tên branch = dùng commit ID.
         string(name: 'backoffice-bff', defaultValue: 'main', description: 'Branch cho backoffice-bff service')
@@ -179,6 +179,8 @@ pipeline {
                                 --set backend.image.repository=\${DOCKER_HUB_USER}/${svc} \
                                 --set backend.image.tag=${tag} \
                                 ${ingressParam}
+                                --wait \
+                                --timeout 120s
                         """
                     }
                 }
