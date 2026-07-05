@@ -144,3 +144,14 @@ jobs:
       image_tag: ${{ github.ref_name }}
     secrets:
       GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+
+  update-prod:
+    needs: build-and-test 
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/gitops-updater.yml
+    with:
+      service_name: 'inventory'
+      environment: 'production'
+      image_tag: ${{ github.sha }}
+    secrets:
+      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
