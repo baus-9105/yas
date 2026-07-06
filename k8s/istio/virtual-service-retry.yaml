@@ -7,7 +7,9 @@ spec:
   hosts:
   - cart
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -27,7 +29,9 @@ spec:
   hosts:
   - customer
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -47,7 +51,9 @@ spec:
   hosts:
   - inventory
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -67,7 +73,9 @@ spec:
   hosts:
   - location
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -87,7 +95,9 @@ spec:
   hosts:
   - media
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -107,7 +117,9 @@ spec:
   hosts:
   - order
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -127,7 +139,9 @@ spec:
   hosts:
   - payment
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -147,7 +161,9 @@ spec:
   hosts:
   - product
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -167,7 +183,9 @@ spec:
   hosts:
   - promotion
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -187,7 +205,9 @@ spec:
   hosts:
   - rating
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -207,7 +227,9 @@ spec:
   hosts:
   - sampledata
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -227,7 +249,9 @@ spec:
   hosts:
   - search
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
@@ -247,7 +271,9 @@ spec:
   hosts:
   - tax
   http:
-  - retries:
+  - match:
+    - port: 80
+    retries:
       attempts: 3
       perTryTimeout: 5s
       retryOn: "5xx,reset,connect-failure"
