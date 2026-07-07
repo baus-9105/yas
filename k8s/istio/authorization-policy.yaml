@@ -302,3 +302,17 @@ spec:
         - "cluster.local/ns/yas/sa/storefront-bff"
         - "cluster.local/ns/yas/sa/backoffice-bff"
         - "cluster.local/ns/yas/sa/order"
+---
+# 11. Allow Prometheus to scrape metrics on port 8090
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-prometheus
+  namespace: yas
+spec:
+  action: ALLOW
+  rules:
+  - to:
+    - operation:
+        ports:
+        - "8090"
