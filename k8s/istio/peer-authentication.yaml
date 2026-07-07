@@ -1,4 +1,4 @@
-# 1. Bật STRICT cho toàn bộ namespace yas, trừ cổng 8090 ra cho Observability
+# 1. Bật STRICT cho toàn bộ namespace yas, kèm theo các ngoại lệ cổng
 apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
@@ -12,52 +12,8 @@ spec:
     mode: STRICT
   portLevelMtls:
     8090:
-      mode: PERMISSIVE
----
-# 2. Mở PERMISSIVE riêng cho storefront-bff để NGINX Ingress có thể giao tiếp
-apiVersion: security.istio.io/v1
-kind: PeerAuthentication
-metadata:
-  name: storefront-bff-ingress-mtls
-  namespace: yas
-spec:
-  selector:
-    matchLabels:
-      app: storefront-bff
-  mtls:
-    mode: STRICT
-  portLevelMtls:
+      mode: PERMISSIVE # Mở cho Prometheus
     80:
-      mode: PERMISSIVE
----
-# 3. Mở PERMISSIVE riêng cho backoffice-bff để NGINX Ingress có thể giao tiếp
-apiVersion: security.istio.io/v1
-kind: PeerAuthentication
-metadata:
-  name: backoffice-bff-ingress-mtls
-  namespace: yas
-spec:
-  selector:
-    matchLabels:
-      app: backoffice-bff
-  mtls:
-    mode: STRICT
-  portLevelMtls:
-    80:
-      mode: PERMISSIVE
----
-# 4. Mở PERMISSIVE riêng cho swagger-ui để NGINX Ingress có thể giao tiếp
-apiVersion: security.istio.io/v1
-kind: PeerAuthentication
-metadata:
-  name: swagger-ui-ingress-mtls
-  namespace: yas
-spec:
-  selector:
-    matchLabels:
-      app: swagger-ui
-  mtls:
-    mode: STRICT
-  portLevelMtls:
+      mode: PERMISSIVE # Mở cho Storefront/Backoffice Ingress
     8080:
-      mode: PERMISSIVE
+      mode: PERMISSIVE # Mở cho Swagger-UI Ingress
