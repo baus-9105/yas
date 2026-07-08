@@ -1,19 +1,9 @@
-# 1. Bật STRICT cho toàn bộ namespace yas, kèm theo các ngoại lệ cổng
+# 1. Bật PERMISSIVE cho toàn bộ namespace yas
 apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
   name: yas-mtls
   namespace: yas
 spec:
-  selector:
-    matchLabels:
-      security.istio.io/tlsMode: istio
   mtls:
-    mode: STRICT
-  portLevelMtls:
-    8090:
-      mode: PERMISSIVE # Mở cho Prometheus
-    80:
-      mode: PERMISSIVE # Mở cho Storefront/Backoffice Ingress
-    8080:
-      mode: PERMISSIVE # Mở cho Swagger-UI Ingress
+    mode: PERMISSIVE
