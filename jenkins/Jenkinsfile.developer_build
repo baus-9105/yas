@@ -180,7 +180,7 @@ pipeline {
                                 --set backend.image.tag=${tag} \
                                 ${ingressParam} \
                                 --wait \
-                                --timeout 120s
+                                --timeout 300s
                         """
                     }
                 }
