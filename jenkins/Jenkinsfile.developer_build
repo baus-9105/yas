@@ -178,7 +178,7 @@ pipeline {
                                 --create-namespace \
                                 --set backend.image.repository=\${DOCKER_HUB_USER}/${svc} \
                                 --set backend.image.tag=${tag} \
-                                ${ingressParam}
+                                ${ingressParam} \
                                 --wait \
                                 --timeout 120s
                         """
